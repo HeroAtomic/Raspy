@@ -1,7 +1,7 @@
 import RPi.GPIO as GPIO
 import time
-import sys
-import signal
+from datetime import datetime as dt
+from colorama import Fore
 
 walk_in_GPIO = 19
 walk_out_GPIO = 20
@@ -14,10 +14,10 @@ capacity = 10
 def count_people(count):
     if GPIO.event_detected(walk_in_GPIO):
         count += 1
-        print('Walk in detected'.format(count))
+        print(Fore.BLUE + 'Walk in detected: {}'.format(dt.now()))
     if GPIO.event_detected(walk_out_GPIO):
         count -= 1
-        print('Walk out detected'.format(count))
+        print(Fore.BLUE + 'Walk out detected: {}'.format(dt.now()))
     return count
 
 
@@ -34,12 +34,16 @@ if __name__ == '__main__':
 
     while True:
         people = count_people(people)
-        print('{} people in room'.format(people))
-        time.sleep(1)
 
-        if people >= capacity:
+        if people > capacity:
             GPIO.output(warning_GPIO, 1)
-            print('WARNING: {}/{} people in room'.format(people, capacity))
+            print(Fore.RED + '{} - WARNING: {}/{} people in room'.format(dt.now(), people, capacity))
             time.sleep(1)
-        else:
+        elif people == capacity:
+            GPIO.output(warning_GPIO, 1)
+            print(Fore.YELLOW + '{} - {} people in room'.format(dt.now(), people))
+            time.sleep(1)
+        elif people < capacity:
             GPIO.output(warning_GPIO, 0)
+            print(Fore.GREEN + '{} - {} people in room'.format(dt.now(), people))
+            time.sleep(1)
